@@ -1,0 +1,24 @@
+'/'
+'/cities'
+List all cities in the collection
+
+'/cities/new'
+Add a new city to the collection
+
+'/cities/<int:city_id>/edit'
+Edit an existing city
+
+'/cities/<int:city_id>/delete'
+Delete a city from the collection
+
+'/cities/<int:city_id>/books'
+List all books in a city
+
+'/cities/<int:city_id>/books/new'
+Add a book to a city
+
+'/cities/<int:city_id>/books/<int:book_id>/edit'
+Edit an existing book
+
+'/cities/<int:city_id>/books/<int:book_id>/delete'
+Delete a book from the collection
