@@ -1,16 +1,32 @@
-from flask import Flask, render_template
-from fakedata import cities
+from flask import Flask, render_template, request, redirect, flash, url_for
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database import Base, City, Book
 
 app = Flask(__name__)
+
+engine = create_engine('sqlite:///bookswapping.db')
+Base.metadata.bind = engine
+
+DBSession = sessionmaker(bind=engine)
+session = DBSession()
 
 @app.route('/')
 @app.route('/cities')
 def cityList():
+    cities = session.query(City).all()
     return render_template('cities.html', cities = cities)
 
-@app.route('/cities/new')
+@app.route('/cities/new', methods=['GET','POST'])
 def newCity():
-    return "This page will allow to create a new city"
+    if request.method == 'POST':
+        newCity = City(name = request.form['name'])
+        session.add(newCity)
+        session.commit()
+        flash("New city %s was successfully added." % request.form['name'])
+        return redirect(url_for('cityList'))
+    else:
+        return render_template('newcity.html')
 
 @app.route('/cities/<int:city_id>/edit')
 def editCity(city_id):
@@ -46,5 +62,6 @@ def contact():
     return render_template('contact.html')
 
 if __name__ == '__main__':
+    app.secret_key = "swapyourbooks!"
     app.debug = True
     app.run(host = '0.0.0.0', port = 5000)
