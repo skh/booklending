@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Bookswapping -- Cities{% endblock %}
+{% block head %}
+  {{ super() }}
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+{% endblock %}
+{% block nav %}
+            <li role="presentation" class="active"><a href="/cities">Home</a></li>
+            <li role="presentation"><a href="/about">About</a></li>
+            <li role="presentation"><a href="/contact">Contact</a></li>
+{% endblock %}
+{% block content %}
+	<div id="signinButton">
+		<span class="g-signin"
+			data-scope="openid email"
+			data-clientid="1069236414549-dvbbcr858rloi4vrrhhf234lde5kav0m.apps.googleusercontent.com"
+			data-redirecturi="postmessage"
+			data-accesstype="offline"
+			data-cookiepolicy="single_host_origin"
+			data-callback="signInCallback"
+			data-approvalprompt="force">
+		</span>
+	</div>
+	<div id="result"></div>
+{% endblock %}
+{% block scripts %}
+<script>
+	function signInCallback(authResult) {
+		if (authResult['code']) {
+			// hide signin button as the user is now authorized
+			$('#signinButton').attr('style', 'display:none');
+			// send the one-time-use code to the server
+			// if the server responds, write a 'login successful' message to
+			// the webpage and then redirect back to the main restaurants page
+			$.ajax({
+				type: 'POST',
+				url: '/gconnect?state={{STATE}}',
+				//processData: false,
+				contentType: 'application/octet-stream; charset=utf-8',
+				data: authResult['code'],
+				success: function (result) {
+					if (result) {
+						$('#result').html('Login Successful!<br>' + result + '<br>Redirecting...');
+						setTimeout(function () {
+							window.location.href= "/cities"
+						}, 4000);
+					} else if (authResult['error']) {
+						console.log('There was an error: ' + authResult['error']);
+					} 
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					$('#result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
+				}
+      });
+		}
+	}
+</script>
+{% endblock %}
