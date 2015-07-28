@@ -186,7 +186,9 @@ def deleteCity(city_id):
 
 @app.route('/cities/<int:city_id>/books')
 def bookList(city_id):
-    return "This page will show all books for city %d" % city_id
+    books = session.query(Book).filter_by(city_id=city_id).all()
+    city = session.query(City).filter_by(id=city_id).one()
+    return render_template('books.html', books=books, city=city)
 
 @app.route('/cities/<int:city_id>/books/new')
 def newBook(city_id):
