@@ -21,6 +21,8 @@ from sqlalchemy.orm import sessionmaker
 from database import Base, City, Book
 
 app = Flask(__name__)
+app.debug = True
+app.secret_key = "swapyourbooks!"
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
@@ -34,6 +36,7 @@ session = DBSession()
 @app.route('/login')
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
@@ -57,7 +60,7 @@ def gconnect():
 
     # check that the access token is valid
     access_token = credentials.access_token
-    url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' % access_token)
+    url = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s' % access_token
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
 
@@ -114,7 +117,39 @@ def gconnect():
         picture=login_session['picture'],
         email=login_session['email'])
 
+# disconnect -- Revoke a current user's token and reset their login_session
+@app.route('/gdisconnect')
+def gdisconnect():
+    # only disconnect a connected user
+    credentials = json.loads(login_session.get('credentials'))
+    if credentials is None:
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    # execute  HTTP GET request to revoke current token
+    access_token = credentials.get('access_token')
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    # always reset the user's session
+    del login_session['credentials']
+    del login_session['gplus_id']
+    del login_session['username']
+    del login_session['email']
+    del login_session['picture']
 
+    if result['status'] == '200':
+        response = make_response(
+            json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    else:
+        # for whatever reason, the given token was invalid
+        response = make_response(
+            json.dumps('Failed to revoke token for given user.'), 400)
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
 @app.route('/')
 @app.route('/cities')
@@ -124,6 +159,8 @@ def cityList():
 
 @app.route('/cities/new', methods=['GET','POST'])
 def newCity():
+    if 'username' not in login_session:
+        return redirect('/login') 
     if request.method == 'POST':
         newCity = City(name = request.form['name'])
         session.add(newCity)
