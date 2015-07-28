@@ -18,7 +18,7 @@ import requests
 # database logic
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import Base, City, Book
+from database import Base, City, Book, User
 
 app = Flask(__name__)
 app.debug = True
@@ -109,6 +109,12 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email']  = data['email']
 
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+        
+    login_session['user_id'] = user_id
+
     flash('You are now logged in as %s' % login_session['username'])
 
     return render_template(
@@ -194,7 +200,6 @@ def editBook(city_id, book_id):
 def deleteBook(city_id, book_id):
     return "This page will allow to delete book %d in city %d" % (book_id, city_id)
 
-
 @app.route('/about')
 def about():
     return render_template('about.html')
@@ -202,6 +207,27 @@ def about():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+def createUser(login_session):
+    newUser = User(name=login_session['username'],
+                    email=login_session['email'],
+                    picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
 
 if __name__ == '__main__':
     app.secret_key = "swapyourbooks!"
