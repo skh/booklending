@@ -1,9 +1,11 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
-Base = declarative_base()
-engine = create_engine('postgres://uzpzbcmbkcdqhr:Bi9f0Q7OYDnb9AR3HiHBqwq8_S@ec2-54-204-3-188.compute-1.amazonaws.com:5432/d7q2eacsp9ckel')
+
+Base = declarative_base() 
+engine = create_engine('postgres://uzpzbcmbkcdqhr:Bi9f0Q7OYDnb9AR3HiHBqwq8_S' +
+                       '@ec2-54-204-3-188.compute-1.amazonaws.com:5432/d7q2e' +
+                       'acsp9ckel')
 
 class User(Base):
     __tablename__ = 'appuser'   # 'user' is used internally by postgresql

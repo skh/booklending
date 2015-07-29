@@ -188,11 +188,23 @@ def deleteCity(city_id):
 def bookList(city_id):
     books = session.query(Book).filter_by(city_id=city_id).all()
     city = session.query(City).filter_by(id=city_id).one()
+    print books
     return render_template('books.html', books=books, city=city)
 
-@app.route('/cities/<int:city_id>/books/new')
+@app.route('/cities/<int:city_id>/books/new', methods=['GET','POST'])
 def newBook(city_id):
-    return "This page will allow to create a new book in city %d" % city_id
+    if 'username' not in login_session:
+        return redirect('/login')
+    city = session.query(City).filter_by(id=city_id).one()
+    if request.method == 'POST':
+        newBook = Book(title=request.form['title'], author=request.form['author'], city_id=city_id)
+        session.add(newBook)
+        session.commit()
+
+        flash("New book was successfully added: %s" % request.form['title'])
+        return redirect(url_for('bookList', city_id=city_id))
+    else:
+        return render_template('newbook.html', city=city)
 
 @app.route('/cities/<int:city_id>/books/<int:book_id>/edit')
 def editBook(city_id, book_id):
