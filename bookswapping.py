@@ -180,9 +180,36 @@ def newCity():
 def editCity(city_id):
     return "This page will allow to edit city %d" % city_id
 
-@app.route('/cities/<int:city_id>/delete')
+@app.route('/cities/<int:city_id>/delete', methods=['GET','POST'])
 def deleteCity(city_id):
-    return "This page will allow to delete city %d" % city_id
+    # not logged in
+    if 'username' not in login_session:
+        flash("You need to be logged in to delete a city.")
+        return redirect('/login')
+
+    city_to_delete = session.query(City).filter_by(id=city_id).one()
+    
+
+    if not city_to_delete:
+        return redirect('/cities')
+    if request.method == 'POST':
+        if request.form['token'] != login_session['token']:
+            # no flash message, we don't talk to CSRFs
+            return redirect('/cities')
+        message = "The city %s was successfully deleted." % city_to_delete.name
+        session.delete(city_to_delete)
+        session.commit()
+        flash(message)
+        return redirect('/cities')
+
+    else:
+        # token to protect against CSRF (cross-site request forgery)
+        login_session['token'] = ''.join(
+            random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
+        # if a city still contains books, we will not delete it, but show a message
+        # and a list of the books -- see template
+        books = session.query(Book).filter_by(city_id=city_to_delete.id).all()
+        return render_template('deletecity.html', city=city_to_delete, books=books, TOKEN=login_session['token'])
 
 @app.route('/cities/<int:city_id>/books')
 def bookList(city_id):
