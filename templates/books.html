@@ -29,24 +29,32 @@
       </div>
         {% endif %}
       {% endwith %}
-      {% for book in books %}
-      <div class="row marketing">
-      	<div class="col-lg-12">
-          <h4>{{ book.title }}</h4>
+      {% if books %}
+        {% for book in books %}
+      <div class="row">
+      	<div class="col-lg-6">
+          <p>{{ book.title }} by {{ book.author }}</p>
+        </div>
+        <div class="col-lg-6 text-right">
+          <p>
+          <a href="{{ url_for('deleteBook', city_id=city.id, book_id=book.id) }}">Delete</a> | 
+          <a href="{{ url_for('editBook', city_id=city.id, book_id=book.id) }}">Edit</a></p>
+        </div>
+      </div>
+      
+        {% endfor %}
+      <div class="row">
+        <div class="col-lg-12">
+          <p>To add your book, click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a>.</p>
         </div>
       </div>
       {% else %}
-      <div class="row marketing">
+      <div class="row">
       	<div class="col-lg-12">
-      		<p>There are no books in the database for {{ city.name }} yet. Click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a> to create one.</p>
-      	</div>
-      </div>
-      {% endfor %}
-      <div class="row marketing">
-      	<div class="col-lg-12">
-      		<p>To add your book, click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a>.</p>
+      		<p>There are no books in this city yet. To add one, click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a>.</p>
        	</div>
      	</div>
+      {% endif %}
 
 
 
