@@ -1,4 +1,5 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -22,6 +23,7 @@ class City(Base):
         Integer, primary_key = True)
     user_id = Column(
         Integer, ForeignKey('appuser.id'))
+    books = relationship("Book")
 
 class Book(Base):
     __tablename__ = 'book'

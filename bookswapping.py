@@ -16,7 +16,7 @@ from flask import make_response
 import requests
 
 # database logic
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from database import Base, City, Book, User
 
@@ -160,7 +160,7 @@ def gdisconnect():
 @app.route('/')
 @app.route('/cities')
 def cityList():
-    cities = session.query(City).all()
+    cities = session.query(City, func.count(Book.id)).outerjoin(Book).group_by(City).all()
     return render_template('cities.html', cities = cities)
 
 @app.route('/cities/new', methods=['GET','POST'])
@@ -176,9 +176,39 @@ def newCity():
     else:
         return render_template('newcity.html')
 
-@app.route('/cities/<int:city_id>/edit')
+@app.route('/cities/<int:city_id>/edit', methods=['GET','POST'])
 def editCity(city_id):
-    return "This page will allow to edit city %d" % city_id
+    # not logged in
+    if 'username' not in login_session:
+        flash("You need to be logged in to edit a city.")
+        return redirect('/login')
+
+    city_to_edit = session.query(City).filter_by(id=city_id).one()
+
+    if not city_to_edit:
+        flash("There is not city with id %d" % city_id)
+        return redirect('/cities')
+
+    if request.method == 'POST':
+        if request.form['token'] != login_session['token']:
+            # no flash message, we don't answer CSRFs
+            return redirect('/cities')
+
+        if request.form['name']:
+            city_to_edit.name = request.form['name']
+            message = "The city %s was successfully edited." % city_to_edit.name
+            session.update(city_to_edit)
+            session.commit()
+            flash(message)
+
+        return redirect('/cities')
+
+    else:
+        # token to protect against CSRF (cross-site request forgery)
+        login_session['token'] = ''.join(
+            random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
+        return render_template('editcity.html', city=city_to_edit, TOKEN=login_session['token'])
+
 
 @app.route('/cities/<int:city_id>/delete', methods=['GET','POST'])
 def deleteCity(city_id):
@@ -189,12 +219,12 @@ def deleteCity(city_id):
 
     city_to_delete = session.query(City).filter_by(id=city_id).one()
     
-
     if not city_to_delete:
+        flash("There is not city with id %d" % city_id)
         return redirect('/cities')
     if request.method == 'POST':
         if request.form['token'] != login_session['token']:
-            # no flash message, we don't talk to CSRFs
+            # no flash message, we don't answer CSRFs
             return redirect('/cities')
         message = "The city %s was successfully deleted." % city_to_delete.name
         session.delete(city_to_delete)
