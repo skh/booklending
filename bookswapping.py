@@ -24,8 +24,8 @@ app = Flask(__name__)
 app.debug = True
 app.secret_key = "swapyourbooks!"
 
-CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
+GP_CLIENT_ID = json.loads(
+    open('gp_client_secrets.json', 'r').read())['web']['client_id']
 
 engine = create_engine('postgres://uzpzbcmbkcdqhr:Bi9f0Q7OYDnb9AR3HiHBqwq8_S@ec2-54-204-3-188.compute-1.amazonaws.com:5432/d7q2eacsp9ckel')
 Base.metadata.bind = engine
@@ -50,7 +50,7 @@ def gconnect():
     code = request.data
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets('gp_client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -79,7 +79,7 @@ def gconnect():
         return response
 
     # verify that the access token is valid for this app
-    if result['issued_to'] != CLIENT_ID:
+    if result['issued_to'] != GP_CLIENT_ID:
         response = make_response(
             json.dumps('Token\'s client ID does not match the application\'s.'))
         response.headers['Content-Type'] = 'application/json'
