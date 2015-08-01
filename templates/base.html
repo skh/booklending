@@ -14,6 +14,8 @@
     {% endblock %}
   </head>
   <body>
+    {# on /login, the facebook code wants to be included "right after the body tag" #}
+    {% block fb %}{% endblock %}
   	<div class="container">
   		<div class="header clearfix">
         <nav>

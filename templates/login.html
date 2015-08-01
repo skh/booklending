@@ -3,7 +3,58 @@
 {% block head %}
   {{ super() }}
   <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+  <!-- prerequisites for G+ login: -->
   <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+
+  
+{% endblock %}
+{% block fb %}
+<!-- prerequisites for Facebook login: -->
+  <div id="fb-root"></div>
+  <script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1622516714699737',
+      cookie     : true,
+      xfbml      : true,
+      version    : 'v2.2'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+  function sendTokenToServer() {
+  	var access_token = FB.getAuthResponse()['authToken'];
+  	console.log("Welcome! Fetching your access token...");
+  	console.log(access_token);
+  	FB.api('/me', function (response) {
+  		console.log('Successful login for ' + response.name);
+  		$.ajax({
+  			type: 'POST',
+  			url: '/fbconnect?state={{STATE}}',
+  			processData: false,
+  			data: access_token,
+  			contentType: 'application/octet-stream; charset=utf-8',
+  			success: function (result) {
+  				$('#result').html('Login successful!<br >' + result +
+  					'<br />Redirecting...');
+  				setTimeout(function () {
+  					window.location.href= "/cities";
+  				}, 4000);
+  			},
+				error: function (xhr, ajaxOptions, thrownError) {
+					$('#result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
+				}  			
+  		});
+  	});
+  }
+</script>
 {% endblock %}
 {% block nav %}
             <li role="presentation"><a href="/cities">Home</a></li>
@@ -12,18 +63,45 @@
             <li role="presentation" class="active"><a href="/login">Login</a></li>
 {% endblock %}
 {% block content %}
-	<div id="signinButton">
-		<span class="g-signin"
-			data-scope="openid email"
-			data-clientid="1069236414549-dvbbcr858rloi4vrrhhf234lde5kav0m.apps.googleusercontent.com"
-			data-redirecturi="postmessage"
-			data-accesstype="offline"
-			data-cookiepolicy="single_host_origin"
-			data-callback="signInCallback"
-			data-approvalprompt="force">
-		</span>
+	<div class="row">
+		<div class="col-lg-6 text-right">
+  		<!-- G+ login button -->
+  		<div id="gplus">
+				<div id="signinButton">
+					<span class="g-signin"
+						data-scope="openid email"
+						data-clientid="1069236414549-dvbbcr858rloi4vrrhhf234lde5kav0m.apps.googleusercontent.com"
+						data-redirecturi="postmessage"
+						data-accesstype="offline"
+						data-cookiepolicy="single_host_origin"
+						data-callback="signInCallback"
+						data-approvalprompt="force">
+					</span>
+				</div>
+			</div>
+			<!-- end G+ login -->
+		</div>
+		<div class="col-lg-6"
+			<!-- Facebook login button -->
+			<div id="facebook">
+			 
+			  	<fb:login-button scope="public_profile,email"
+			  									 size="medium"
+			  									 autologoutlink="true"
+			  	                 onLogin="sendTokenToServer();">Login to Facebook
+			  	  
+			  	</fb:login-button> 
+		
+			</div>
+			<!-- end Facebook button -->
+		</div>
 	</div>
-	<div id="result"></div>
+	<div class="row">
+		<div class="col-lg-12 text-center">
+			<div id="result" style="height: 20px;"></div>
+			<div id="status" style="height: 20px;"></div>
+		</div>
+	</div>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -42,7 +120,7 @@
 				data: authResult['code'],
 				success: function (result) {
 					if (result) {
-						$('#result').html('Login Successful!<br>' + result + '<br>Redirecting...');
+						$('#gp-result').html('Login Successful!<br>' + result + '<br>Redirecting...');
 						setTimeout(function () {
 							window.location.href= "/cities"
 						}, 4000);
@@ -51,7 +129,7 @@
 					} 
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
-					$('#result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
+					$('#gp-result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
 				}
       });
 		}
