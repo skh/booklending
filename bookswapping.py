@@ -35,11 +35,13 @@ session = DBSession()
 
 @app.route('/login')
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = ''.join(random.choice(
+        string.ascii_uppercase + string.digits) for x in xrange(32))
 
     login_session['state'] = state
     return render_template('login.html', STATE=state)
 
+# G+ connect
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     if request.args.get('state') != login_session['state']:
@@ -120,10 +122,9 @@ def gconnect():
     return render_template(
         'welcome.html', 
         username=login_session['username'],
-        picture=login_session['picture'],
-        email=login_session['email'])
+        picture=login_session['picture'])
 
-# disconnect -- Revoke a current user's token and reset their login_session
+# G+ disconnect -- Revoke a current user's token and reset their login_session
 @app.route('/gdisconnect')
 def gdisconnect():
     # only disconnect a connected user
@@ -138,6 +139,7 @@ def gdisconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
+
     # always reset the user's session
     del login_session['credentials']
     del login_session['gplus_id']
@@ -156,6 +158,87 @@ def gdisconnect():
             json.dumps('Failed to revoke token for given user.'), 400)
         response.headers['Content-Type'] = 'application/json'
         return response
+
+# Facebook connect
+
+@app.route('/fbconnect',methods=['POST'])
+def fbconnect():
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps(
+            'Invalid state parameter', 401))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = request.data
+
+    # Exchange client token for long-lived server-side token
+    fb_client_secrets = json.loads(open('fb_client_secrets.json', 'r').read())
+    app_id = fb_client_secrets['web']['app_id']
+    app_secret = fb_client_secrets['web']['app_secret']
+    url = "https://graph.facebook.com/oauth/access_token?grant_type=" + \
+        "fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s" \
+        % (app_id, app_secret, access_token)
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+
+    # get long-lived token from result
+    # format of result is "access_token=<tokenstring>&expires<time>"
+    token = result.split("&")[0]
+
+    # store token in order to be able to logout again
+    login_session['access_token'] = token.split('=')[1]
+
+    # know where to logout from
+    login_session['provider'] = 'facebook'
+
+    # get basic user information
+    url = 'https://graph.facebook.com/v2.2/me?%s&fields=email,name' % token
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+
+    login_session['username'] = data['name']
+    login_session['email'] = data['email']
+    login_session['facebook_id'] = data['id']
+
+    # get user picture
+    url = 'https://graph.facebook.com/v2.4/me/picture' + \
+        '?%s&redirect=0&height=200&width=200' % token
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+
+    login_session['picture'] = data['data']['url']
+
+    # see if user exists
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+
+    return render_template(
+        'welcome.html', 
+        username=login_session['username'],
+        picture=login_session['picture'])
+
+# Facebook disconnect -- revoke 
+@app.route('/fbdisconnect')
+def fbdisconnect():
+    facebook_id = login_session['facebook_id']
+    # only disconnect a connected user
+    if not facebook_id:
+        response = make_response(
+        json.dumps('Current user not connected.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
+    access_token = login_session['access_token']
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' \
+        % (facebook_id, access_token)
+    h = httplib2.Http()
+    result = h.request(url, 'DELETE')[1]
+
+    response = make_response(
+        json.dumps(result), 200)
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 @app.route('/')
 @app.route('/cities')

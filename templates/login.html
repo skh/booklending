@@ -30,7 +30,8 @@
    }(document, 'script', 'facebook-jssdk'));
 
   function sendTokenToServer() {
-  	var access_token = FB.getAuthResponse()['authToken'];
+  	var facebook_response = FB.getAuthResponse()
+  	var access_token = facebook_response['accessToken']; 
   	console.log("Welcome! Fetching your access token...");
   	console.log(access_token);
   	FB.api('/me', function (response) {
@@ -42,8 +43,7 @@
   			data: access_token,
   			contentType: 'application/octet-stream; charset=utf-8',
   			success: function (result) {
-  				$('#result').html('Login successful!<br >' + result +
-  					'<br />Redirecting...');
+  				$('#result').html(result);
   				setTimeout(function () {
   					window.location.href= "/cities";
   				}, 4000);
@@ -87,7 +87,7 @@
 			 
 			  	<fb:login-button scope="public_profile,email"
 			  									 size="medium"
-			  									 autologoutlink="true"
+			  									 autologoutlink="false"
 			  	                 onLogin="sendTokenToServer();">Login to Facebook
 			  	  
 			  	</fb:login-button> 
@@ -103,7 +103,7 @@
 		</div>
 	</div>
 {% endblock %}
-{% block scripts %}
+{% block scritps %}
 <script>
 	function signInCallback(authResult) {
 		if (authResult['code']) {
