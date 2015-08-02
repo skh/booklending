@@ -258,10 +258,10 @@ def newCity():
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
             return redirect('/cities')
-        newCity = City(name = request.form['name'])
+        newCity = City(name=request.form['name'],user_id=login_session['user_id'])
         session.add(newCity)
         session.commit()
-        flash("New city %s was successfully added." % request.form['name'])
+        flash("New city was successfully added: %s" % request.form['name'])
         return redirect(url_for('cityList'))
     else:
         # token to protect against CSRF (cross-site request forgery)
@@ -357,7 +357,9 @@ def newBook(city_id):
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
             return redirect('/cities')
-        newBook = Book(title=request.form['title'], author=request.form['author'], city_id=city_id)
+        newBook = Book(title=request.form['title'], 
+            author=request.form['author'], city_id=city_id, 
+            user_id=login_session['user_id'])
         session.add(newBook)
         session.commit()
 
@@ -464,8 +466,7 @@ def getUserInfo(user_id):
 
 def createUser(login_session):
     newUser = User(name=login_session['username'],
-                    email=login_session['email'],
-                    picture=login_session['picture'])
+                    email=login_session['email'])
     session.add(newUser)
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()

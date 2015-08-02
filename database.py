@@ -12,7 +12,6 @@ class User(Base):
     __tablename__ = 'appuser'   # 'user' is used internally by postgresql
     name = Column(String(80), nullable = False)
     email = Column(String(80), nullable = False)
-    picture = Column(String(250))
     id = Column(Integer, primary_key = True)
 
 class City(Base):
@@ -31,7 +30,6 @@ class Book(Base):
         String(80), nullable = False)
     author = Column(
         String(80), nullable=False)
-    description = Column(String(250))
     id = Column(
         Integer, primary_key = True)
     city_id = Column(
