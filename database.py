@@ -10,33 +10,27 @@ engine = create_engine('postgres://uzpzbcmbkcdqhr:Bi9f0Q7OYDnb9AR3HiHBqwq8_S' +
 
 class User(Base):
     __tablename__ = 'appuser'   # 'user' is used internally by postgresql
-    name = Column(String(80), nullable = False)
-    email = Column(String(80), nullable = False)
-    id = Column(Integer, primary_key = True)
+    name = Column(String(80), nullable=False)
+    email = Column(String(80), nullable=False)
+    id = Column(Integer, primary_key=True)
 
 class City(Base):
     __tablename__ = 'city'
-    name = Column(
-        String(80), nullable = False)
-    id = Column(
-        Integer, primary_key = True)
-    user_id = Column(
-        Integer, ForeignKey('appuser.id'))
+    name = Column(String(80), nullable=False)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('appuser.id'))
     books = relationship("Book")
 
 class Book(Base):
     __tablename__ = 'book'
-    title = Column(
-        String(80), nullable = False)
-    author = Column(
-        String(80), nullable=False)
-    id = Column(
-        Integer, primary_key = True)
-    city_id = Column(
-        Integer, ForeignKey('city.id'))
-    user_id = Column(
-        Integer, ForeignKey('appuser.id'))
-
+    title = Column(String(80), nullable=False)
+    author = Column(String(80), nullable=False)
+    id = Column(Integer, primary_key=True)
+    city_id = Column(Integer, ForeignKey('city.id'))
+    owner_id = Column(Integer, ForeignKey('appuser.id'))
+    requestor_id = Column(Integer, ForeignKey('appuser.id'))
+    requestor_comment = Column(String(400))
+    status = Column(String(80), nullable=False)
 
 
 Base.metadata.create_all(engine)

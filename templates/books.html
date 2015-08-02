@@ -41,10 +41,19 @@
           <p><strong>{{ book.title }}</strong> by <em>{{ book.author }}</em></p>
         </div>
         <div class="col-lg-6 text-right">
-          {% if 'username' in session and user_id == book.user_id %}
+          {% if 'username' in session and user_id == book.owner_id %}
           <p>
           <a href="{{ url_for('deleteBook', city_id=city.id, book_id=book.id) }}">Delete</a> | 
           <a href="{{ url_for('editBook', city_id=city.id, book_id=book.id) }}">Edit</a></p>
+            {% if book.status == "Requested" %}
+              <p><a href="">Requested for swapping</a></p>
+            {% endif %}
+          {% else %}
+            {% if book.status == "Available" %}
+            <p><a href="{{ url_for('requestBook', city_id=city.id, book_id=book.id) }}">Request book for swapping</a></p>
+            {% else %}
+            <p>Requested for swapping</p>
+            {% endif %}
           {% endif %}
         </div>
       </div>

@@ -368,7 +368,8 @@ def newBook(city_id):
             return redirect('/cities')
         newBook = Book(title=request.form['title'], 
             author=request.form['author'], city_id=city_id, 
-            user_id=login_session['user_id'])
+            owner_id=login_session['user_id'],
+            status="Available")
         session.add(newBook)
         session.commit()
 
@@ -421,6 +422,51 @@ def editBook(city_id, book_id):
         return render_template('editbook.html', book=book_to_edit, 
             city=city, TOKEN=login_session['token'])
 
+@app.route('/cities/<int:city_id>/books/<int:book_id>/request', methods=['GET','POST'])
+def requestBook(city_id, book_id):
+    # not logged in
+    if 'username' not in login_session:
+        flash('You need to be logged in to request a book.', 'error')
+        return redirect('/cities')
+
+    book_requested = session.query(Book).filter_by(id=book_id).one()
+    city = session.query(City).filter_by(id=city_id).one()
+
+    if not book_requested:
+        flash("There is no book with id %d" % book_id)
+        return redirect('/cities')
+
+    if not city:
+        flash("There is no city with id %d" % city_id)
+        return redirect('/cities')
+
+    if request.method == 'POST':
+        if request.form['token'] != login_session['token']:
+            # no flash message, we don't answer CSRFs
+            return redirect('/cities')
+
+        if len(request.form['comment']) == 0:
+            flash("You need to enter your contact information for book swapping.")
+            return redirect('/cities')
+
+        if request.form['comment']:
+            book_requested.requestor_comment = request.form['comment']
+            book_requested.requestor_id = login_session['user_id']
+            book_requested.status="Requested"
+            message = "The book %s by %s was successfully requested." % (
+                book_requested.title, book_requested.author)
+            session.add(book_requested)
+            session.commit()
+            flash(message)
+
+        return redirect('/cities')
+
+    else:
+        # token to protect against CSRF (cross-site request forgery)
+        login_session['token'] = ''.join(
+            random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
+        return render_template('requestbook.html', book=book_requested, 
+            city=city, TOKEN=login_session['token'])
 
 @app.route('/cities/<int:city_id>/books/<int:book_id>/delete', methods=['GET','POST'])
 def deleteBook(city_id, book_id):

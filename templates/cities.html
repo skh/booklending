@@ -41,7 +41,7 @@
           <p><a href="{{ url_for('bookList', city_id=city[0].id) }}">{{ city[0].name }} ({{ city[1] }} {{ bookstring }})</a></p>
         </div>
         <div class="col-lg-6 text-right">
-          {% if 'username' in session and user_id == city.user_id %}
+          {% if 'username' in session and user_id == city[0].user_id %}
           <p><a href="{{ url_for('deleteCity', city_id=city[0].id) }}">Delete</a> | 
              <a href="{{ url_for('editCity', city_id=city[0].id) }}">Edit</a></p>
           {% endif %}
