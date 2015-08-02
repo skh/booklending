@@ -36,18 +36,19 @@
           {% else %}
             {% set bookstring = "books" %}
           {% endif %}
-        
       <div class="row">
       	<div class="col-lg-6">
           <p><a href="{{ url_for('bookList', city_id=city[0].id) }}">{{ city[0].name }} ({{ city[1] }} {{ bookstring }})</a></p>
         </div>
         <div class="col-lg-6 text-right">
+          {% if 'username' in session and user_id == city.user_id %}
           <p><a href="{{ url_for('deleteCity', city_id=city[0].id) }}">Delete</a> | 
              <a href="{{ url_for('editCity', city_id=city[0].id) }}">Edit</a></p>
+          {% endif %}
         </div>
       </div>
         {% endfor %}
-      <div class="row marketing">
+      <div class="row">
         <div class="col-lg-12">
           {% if 'username' in session %}
           <p>Your city is not listed? To add it, click <a href="{{ url_for('newCity') }}">here</a>.</p>
@@ -57,7 +58,7 @@
         </div>
       </div>
       {% else %}
-      <div class="row marketing">
+      <div class="row">
       	<div class="col-lg-12">
           {% if 'username' in session %}
       		<p>There are no cities in the database yet. Click <a href="{{ url_for('newCity') }}">here</a> to create one.</p>

@@ -246,8 +246,13 @@ def disconnect():
 @app.route('/')
 @app.route('/cities')
 def cityList():
-    cities = session.query(City, func.count(Book.id)).outerjoin(Book).group_by(City).all()
-    return render_template('cities.html', cities = cities)
+    cities = session.query(
+        City, func.count(Book.id)).outerjoin(Book).group_by(City).all()
+    if 'username' in login_session:
+        return render_template('cities.html', cities=cities, 
+            user_id=login_session['user_id'])
+    else:
+        return render_template('cities.html', cities=cities)
 
 @app.route('/cities/new', methods=['GET','POST'])
 def newCity():
@@ -339,7 +344,11 @@ def bookList(city_id):
     books = session.query(Book).filter_by(city_id=city_id).all()
     city = session.query(City).filter_by(id=city_id).one()
     print books
-    return render_template('books.html', books=books, city=city)
+    if 'username' in login_session:
+        return render_template('books.html', books=books, city=city, 
+            user_id=login_session['user_id'])
+    else:
+        return render_template('books.html', books=books, city=city)
 
 @app.route('/cities/<int:city_id>/books/new', methods=['GET','POST'])
 def newBook(city_id):

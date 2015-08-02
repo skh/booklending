@@ -29,6 +29,11 @@
       </div>
         {% endif %}
       {% endwith %}
+      <div class="row">
+        <div class="col-lg-12">
+          <p><a href='/cities'>&lt; Back to cities</a></p>
+        </div>
+      </div>
       {% if books %}
         {% for book in books %}
       <div class="row">
@@ -36,9 +41,11 @@
           <p><strong>{{ book.title }}</strong> by <em>{{ book.author }}</em></p>
         </div>
         <div class="col-lg-6 text-right">
+          {% if 'username' in session and user_id == book.user_id %}
           <p>
           <a href="{{ url_for('deleteBook', city_id=city.id, book_id=book.id) }}">Delete</a> | 
           <a href="{{ url_for('editBook', city_id=city.id, book_id=book.id) }}">Edit</a></p>
+          {% endif %}
         </div>
       </div>
       
