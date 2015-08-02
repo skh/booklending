@@ -1,0 +1,5 @@
+            {% if 'username' not in session %}
+              <li role="presentation"><a href="/login">Login</a></li>
+            {% else %}
+              <li role="presentation"><a href="{{ url_for('disconnect')}}">Logout</a></li>
+            {% endif %}
