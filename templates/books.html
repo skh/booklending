@@ -33,7 +33,7 @@
         {% for book in books %}
       <div class="row">
       	<div class="col-lg-6">
-          <p>{{ book.title }} by {{ book.author }}</p>
+          <p><strong>{{ book.title }}</strong> by <em>{{ book.author }}</em></p>
         </div>
         <div class="col-lg-6 text-right">
           <p>
@@ -45,13 +45,21 @@
         {% endfor %}
       <div class="row">
         <div class="col-lg-12">
+          {% if 'username' in session %}
           <p>To add your book, click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a>.</p>
+          {% else %}
+          <p>To take part in bookswapping and add your book, click <a href="/login">here</a> to log in.</p>
+          {% endif %}
         </div>
       </div>
       {% else %}
       <div class="row">
       	<div class="col-lg-12">
+          {% if 'username' in session %}
       		<p>There are no books in this city yet. To add one, click <a href="{{ url_for('newBook', city_id=city.id) }}">here</a>.</p>
+          {% else %}
+          <p>To take part in bookswapping and add the first book in this city, click <a href="/login">here</a> to log in.</p>
+          {% endif %}
        	</div>
      	</div>
       {% endif %}

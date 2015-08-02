@@ -252,7 +252,8 @@ def cityList():
 @app.route('/cities/new', methods=['GET','POST'])
 def newCity():
     if 'username' not in login_session:
-        return redirect('/login') 
+        flash('You need to be logged in to add a city.', 'error')
+        return redirect('/cities') 
     if request.method == 'POST':
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
@@ -272,8 +273,8 @@ def newCity():
 def editCity(city_id):
     # not logged in
     if 'username' not in login_session:
-        flash("You need to be logged in to edit a city.")
-        return redirect('/login')
+        flash('You need to be logged in to edit a city.', 'error')
+        return redirect('/cities')
 
     city_to_edit = session.query(City).filter_by(id=city_id).one()
 
@@ -306,8 +307,8 @@ def editCity(city_id):
 def deleteCity(city_id):
     # not logged in
     if 'username' not in login_session:
-        flash("You need to be logged in to delete a city.")
-        return redirect('/login')
+        flash('You need to be logged in to delete a city.', 'error')
+        return redirect('/cities')
 
     city_to_delete = session.query(City).filter_by(id=city_id).one()
     
@@ -343,7 +344,8 @@ def bookList(city_id):
 @app.route('/cities/<int:city_id>/books/new', methods=['GET','POST'])
 def newBook(city_id):
     if 'username' not in login_session:
-        return redirect('/login')
+        flash('You need to be logged in to add a book.', 'error')
+        return redirect('/cities')
 
     city = session.query(City).filter_by(id=city_id).one()
 
@@ -371,8 +373,8 @@ def newBook(city_id):
 def editBook(city_id, book_id):
     # not logged in
     if 'username' not in login_session:
-        flash("You need to be logged in to edit a book.")
-        return redirect('/login')
+        flash('You need to be logged in to edit a book.', 'error')
+        return redirect('/cities')
 
     book_to_edit = session.query(Book).filter_by(id=book_id).one()
     city = session.query(City).filter_by(id=city_id).one()
@@ -413,8 +415,8 @@ def editBook(city_id, book_id):
 def deleteBook(city_id, book_id):
     # not logged in
     if 'username' not in login_session:
-        flash("You need to be logged in to delete a book.")
-        return redirect('/login')
+        flash('You need to be logged in to delete a book.', 'error')
+        return redirect('/cities')
 
     book_to_delete = session.query(Book).filter_by(id=book_id, city_id=city_id).one()
     city = session.query(City).filter_by(id=city_id).one()
