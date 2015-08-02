@@ -124,7 +124,7 @@
 				data: authResult['code'],
 				success: function (result) {
 					if (result) {
-						$('#gp-result').html('Login Successful!<br>' + result + '<br>Redirecting...');
+						$('#result').html(result);
 						setTimeout(function () {
 							window.location.href= "/cities"
 						}, 4000);
@@ -133,7 +133,7 @@
 					} 
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
-					$('#gp-result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
+					$('#result').html('Failed to make a server-side call. Check your configuration and console.<br>Error: ' + thrownError + ' Status: ' + xhr.status);
 				}
       });
 		}
