@@ -500,6 +500,39 @@ def deleteBook(city_id, book_id):
             random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
         return render_template('deletebook.html', city=city, book=book_to_delete, TOKEN=login_session['token'])
 
+@app.route('/cities/<int:city_id>/books/<int:book_id>/swap', methods=['GET','POST'])
+def swapBook(city_id, book_id):
+    # not logged in
+    if 'username' not in login_session:
+        flash('You need to be logged in to swap a book.', 'error')
+        return redirect('/cities')
+
+    book_to_swap = session.query(Book).filter_by(id=book_id, city_id=city_id).one()
+    city = session.query(City).filter_by(id=city_id).one()
+    
+    if not city:
+        flash("There is no city with id %d" % city_id)
+        return redirect('/cities')
+    if not book_to_swap:
+        flash("There is no book with id %d" % book_id)
+    if request.method == 'POST':
+        if request.form['token'] != login_session['token']:
+            # no flash message, we don't answer CSRFs
+            return redirect('/cities')
+        message = "The book %s by %s was successfully swapped." % (
+            book_to_swap.title, book_to_swap.author)
+        session.delete(book_to_swap)
+        session.commit()
+        flash(message)
+        return redirect(url_for('bookList', city_id=city_id))
+
+    else:
+        # token to protect against CSRF (cross-site request forgery)
+        login_session['token'] = ''.join(
+            random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
+        return render_template('swapbook.html', city=city, book=book_to_swap, TOKEN=login_session['token'])
+
+
 @app.route('/about')
 def about():
     return render_template('about.html')
