@@ -9,16 +9,19 @@ import random, string
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 
-# stuff?
-import httplib2
-import json
-from flask import make_response
-import requests
-
 # database logic
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from database import Base, City, Book, User
+
+# for API endpoints
+from flask import jsonify
+
+# assorted useful helpers
+import httplib2
+import json
+from flask import make_response
+import requests
 
 app = Flask(__name__)
 app.debug = True
@@ -32,6 +35,10 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+####################
+# Login & OAuth
+####################
 
 @app.route('/login')
 def showLogin():
@@ -242,6 +249,9 @@ def disconnect():
         flash('You were not logged in.')
         return redirect('/cities')
 
+####################
+# Web UI
+####################
 
 @app.route('/')
 @app.route('/cities')
@@ -532,6 +542,31 @@ def swapBook(city_id, book_id):
             random.choice(string.ascii_uppercase + string.digits) for x in xrange(16))
         return render_template('swapbook.html', city=city, book=book_to_swap, TOKEN=login_session['token'])
 
+####################
+# JSON API Endpoint
+####################
+
+@app.route('/cities/JSON')
+def cityListJSON():
+    cities = session.query(City).all()
+    return jsonify(Cities = [c.serialize for c in cities])
+
+@app.route('/cities/<int:city_id>/books/JSON')
+def bookListJSON(city_id):
+    city = session.query(City).filter_by(id = city_id).one()
+    books = session.query(Book).filter_by(
+        city_id=city.id).all()
+    return jsonify(Books = [b.serialize for b in books])
+
+@app.route('/cities/<int:city_id>/books/<int:book_id>/JSON')
+def bookJSON(city_id, book_id):
+    book = session.query(Book).filter_by(
+        id = book_id).one()
+    return jsonify(Book = book.serialize)
+
+####################
+# Static pages
+####################
 
 @app.route('/about')
 def about():
@@ -540,6 +575,10 @@ def about():
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
+####################
+# User management
+####################
 
 def getUserID(email):
     try:
@@ -560,6 +599,9 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
 
+####################
+# app setup
+####################
 
 if __name__ == '__main__':
     app.secret_key = "swapyourbooks!"

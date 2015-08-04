@@ -21,6 +21,13 @@ class City(Base):
     user_id = Column(Integer, ForeignKey('appuser.id'))
     books = relationship("Book")
 
+    @property
+    def serialize(self):
+        return {
+            'id' : self.id,
+            'name' : self.name
+        }
+
 class Book(Base):
     __tablename__ = 'book'
     title = Column(String(80), nullable=False)
@@ -31,6 +38,16 @@ class Book(Base):
     requestor_id = Column(Integer, ForeignKey('appuser.id'))
     requestor_comment = Column(String(400))
     status = Column(String(80), nullable=False)
+
+    @property
+    def serialize(self):
+        return {
+            'id' : self.id,
+            'title' : self.title,
+            'author': self.author,
+            'city_id' : self.city_id,
+            'status' : self.status
+        }
 
 
 Base.metadata.create_all(engine)
