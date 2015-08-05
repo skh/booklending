@@ -39,6 +39,7 @@ class Book(Base):
     requestor_id = Column(Integer, ForeignKey('appuser.id'))
     requestor_comment = Column(String(400))
     status = Column(String(80), nullable=False)
+    image_url=Column(String(400), nullable="True")
 
     @property
     def serialize(self):

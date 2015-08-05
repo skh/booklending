@@ -390,6 +390,8 @@ def newBook(city_id):
             author=request.form['author'], city_id=city_id, 
             owner_id=login_session['user_id'],
             status="Available")
+        if request.form['image_url']:
+            newBook.image_url = request.form['image_url']
         session.add(newBook)
         session.commit()
 
