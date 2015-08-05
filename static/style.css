@@ -1,3 +1,17 @@
 body {
 	font-family: 'Vollkorn', serif;
 }
+
+.thumbnail {
+	max-width: 50px;
+	max-height: 75px;
+	overflow: hidden;
+	margin-right: 20px;
+	flow: right;
+	display: inline;
+}
+
+.book-row {
+	display: flex;
+	align-items: center;
+}

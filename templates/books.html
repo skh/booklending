@@ -36,9 +36,14 @@
       </div>
       {% if books %}
         {% for book in books %}
-      <div class="row">
+        {% if book.image_url %}
+          {% set image_url = book.image_url%}
+        {% else %}
+          {% set image_url = '/static/book.png' %}
+        {% endif %}
+      <div class="row book-row">
       	<div class="col-lg-6">
-          <p><strong>{{ book.title }}</strong> by <em>{{ book.author }}</em></p>
+          <p><img class="img-rounded thumbnail" src="{{ image_url }}"><strong>{{ book.title }}</strong> by <em>{{ book.author }}</em></p>
         </div>
         <div class="col-lg-6 text-right">
           {% if 'username' in session and user_id == book.owner_id %}
