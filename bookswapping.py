@@ -16,6 +16,7 @@ from database import Base, City, Book, User, DATABASE_URL
 
 # for API endpoints
 from flask import jsonify
+from dicttoxml import dicttoxml
 
 # assorted useful helpers
 import httplib2
@@ -577,20 +578,42 @@ def swapBook(city_id, book_id):
 @app.route('/cities/JSON')
 def cityListJSON():
     cities = session.query(City).all()
-    return jsonify(Cities = [c.serialize for c in cities])
+    return jsonify(Cities=[c.serialize for c in cities])
 
 @app.route('/cities/<int:city_id>/books/JSON')
 def bookListJSON(city_id):
     city = session.query(City).filter_by(id = city_id).one()
     books = session.query(Book).filter_by(
         city_id=city.id).all()
-    return jsonify(Books = [b.serialize for b in books])
+    return jsonify(Books=[b.serialize for b in books])
 
 @app.route('/cities/<int:city_id>/books/<int:book_id>/JSON')
 def bookJSON(city_id, book_id):
     book = session.query(Book).filter_by(
         id = book_id).one()
-    return jsonify(Book = book.serialize)
+    return jsonify(Book=book.serialize)
+
+####################
+# XML API Endpoint
+####################
+
+@app.route('/cities/XML')
+def cityListXML():
+    cities = session.query(City).all()
+    return dicttoxml({'Cities': [c.serialize for c in cities]})
+
+@app.route('/cities/<int:city_id>/books/XML')
+def bookListXML(city_id):
+    city = session.query(City).filter_by(id = city_id).one()
+    books = session.query(Book).filter_by(
+        city_id=city.id).all()
+    return dicttoxml({'Books':[b.serialize for b in books]})
+
+@app.route('/cities/<int:city_id>/books/<int:book_id>/XML')
+def bookXML(city_id, book_id):
+    book = session.query(Book).filter_by(
+        id = book_id).one()
+    return dicttoxml({'Book': book.serialize})
 
 ####################
 # Static pages
