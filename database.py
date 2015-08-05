@@ -20,7 +20,7 @@ class City(Base):
     name = Column(String(80), nullable=False)
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('appuser.id'))
-    books = relationship("Book")
+    books = relationship("Book", cascade="delete")
 
     @property
     def serialize(self):
