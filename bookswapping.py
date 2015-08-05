@@ -12,7 +12,7 @@ from oauth2client.client import FlowExchangeError
 # database logic
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from database import Base, City, Book, User
+from database import Base, City, Book, User, DATABASE_URL
 
 # for API endpoints
 from flask import jsonify
@@ -30,7 +30,7 @@ app.secret_key = "swapyourbooks!"
 GP_CLIENT_ID = json.loads(
     open('gp_client_secrets.json', 'r').read())['web']['client_id']
 
-engine = create_engine('postgres://uzpzbcmbkcdqhr:Bi9f0Q7OYDnb9AR3HiHBqwq8_S@ec2-54-204-3-188.compute-1.amazonaws.com:5432/d7q2eacsp9ckel')
+engine = create_engine(DATABASE_URL)
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
