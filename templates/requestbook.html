@@ -31,6 +31,9 @@
             </div>
             <div class="form-group">
               <button type="submit" class="btn btn-default">Request book</button>
+              <a href="{{ url_for('bookList', city_id=city.id) }}" class="btn btn-default" role="button">
+                Cancel
+              </a>
             </div>
           </form>
         </div>

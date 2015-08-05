@@ -28,6 +28,9 @@
               <input type="hidden" name="token" value="{{ TOKEN }}">
             </div>
             <button type="submit" class="btn btn-default">Add book</button>
+            <a href="{{ url_for('bookList', city_id=city.id) }}" class="btn btn-default" role="button">
+                Cancel
+            </a>
           </form>
         </div>
      	</div>
