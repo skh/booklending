@@ -460,7 +460,7 @@ def requestBook(city_id, book_id):
         flash("There is no book with id %d" % book_id)
         return redirect('/cities')
 
-    if book_requested == login_session['user_id']:
+    if book_requested.owner_id == login_session['user_id']:
         flash("You can't request your own books for swapping")
         return redirect('/cities')
 
@@ -550,7 +550,7 @@ def swapBook(city_id, book_id):
         flash("There is no book with id %d" % book_id)
         return redirect('/cities')
 
-    if book_to_swap.ownder_id != login_session['user_id']:
+    if book_to_swap.owner_id != login_session['user_id']:
         flash("You can only swap your own books.")
         return redirect('/cities')
 
