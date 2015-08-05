@@ -297,6 +297,10 @@ def editCity(city_id):
         flash("There is no city with id %d" % city_id)
         return redirect('/cities')
 
+    if city_to_edit.user_id != login_session['user_id']:
+        flash('You can only edit your own items.')
+        return redirect('/cities')
+
     if request.method == 'POST':
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
@@ -330,6 +334,11 @@ def deleteCity(city_id):
     if not city_to_delete:
         flash("There is no city with id %d" % city_id)
         return redirect('/cities')
+
+    if city_to_delete.user_id != login_session['user_id']:
+        flash('You can only delete your own items.')
+        return redirect('/cities')
+
     if request.method == 'POST':
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
@@ -405,6 +414,10 @@ def editBook(city_id, book_id):
         flash("There is no book with id %d" % book_id)
         return redirect('/cities')
 
+    if book_to_edit.owner_id != login_session['user_id']:
+        flash('You can only edit your own items.')
+        return redirect('/cities')
+
     if not city:
         flash("There is no city with id %d" % city_id)
         return redirect('/cities')
@@ -444,6 +457,10 @@ def requestBook(city_id, book_id):
 
     if not book_requested:
         flash("There is no book with id %d" % book_id)
+        return redirect('/cities')
+
+    if book_requested == login_session['user_id']:
+        flash("You can't request your own books for swapping")
         return redirect('/cities')
 
     if not city:
@@ -487,6 +504,10 @@ def deleteBook(city_id, book_id):
 
     book_to_delete = session.query(Book).filter_by(id=book_id, city_id=city_id).one()
     city = session.query(City).filter_by(id=city_id).one()
+
+    if book_to_delete.owner_id != login_session['user_id']:
+        flash('You can only delete your own items.')
+        return redirect('/cities')
     
     if not city:
         flash("There is no city with id %d" % city_id)
@@ -523,8 +544,15 @@ def swapBook(city_id, book_id):
     if not city:
         flash("There is no city with id %d" % city_id)
         return redirect('/cities')
+
     if not book_to_swap:
         flash("There is no book with id %d" % book_id)
+        return redirect('/cities')
+
+    if book_to_swap.ownder_id != login_session['user_id']:
+        flash("You can only swap your own books.")
+        return redirect('/cities')
+
     if request.method == 'POST':
         if request.form['token'] != login_session['token']:
             # no flash message, we don't answer CSRFs
