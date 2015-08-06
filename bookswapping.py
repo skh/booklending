@@ -430,9 +430,12 @@ def editBook(city_id, book_id):
             # no flash message, we don't answer CSRFs
             return redirect('/cities')
 
+
         if request.form['title'] and request.form['author']:
             book_to_edit.title = request.form['title']
             book_to_edit.author = request.form['author']
+            if request.form['image_url']:
+                book_to_edit.image_url = request.form['image_url']
             message = "The book %s by %s was successfully edited." % (
                 book_to_edit.title, book_to_edit.author)
             session.add(book_to_edit)
@@ -602,20 +605,26 @@ def bookJSON(city_id, book_id):
 @app.route('/cities/XML')
 def cityListXML():
     cities = session.query(City).all()
-    return dicttoxml({'Cities': [c.serialize for c in cities]})
+    response = make_response(dicttoxml({'Cities': [c.serialize for c in cities]}), 200)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 @app.route('/cities/<int:city_id>/books/XML')
 def bookListXML(city_id):
     city = session.query(City).filter_by(id = city_id).one()
     books = session.query(Book).filter_by(
         city_id=city.id).all()
-    return dicttoxml({'Books':[b.serialize for b in books]})
+    response = make_response(dicttoxml({'Books':[b.serialize for b in books]}), 200)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 @app.route('/cities/<int:city_id>/books/<int:book_id>/XML')
 def bookXML(city_id, book_id):
     book = session.query(Book).filter_by(
         id = book_id).one()
-    return dicttoxml({'Book': book.serialize})
+    response = make_response(dicttoxml({'Book': book.serialize}), 200)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 ####################
 # Static pages
