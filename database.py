@@ -48,7 +48,8 @@ class Book(Base):
             'title' : self.title,
             'author': self.author,
             'city_id' : self.city_id,
-            'status' : self.status
+            'status' : self.status,
+            'image_url' : self.image_url
         }
 
 
