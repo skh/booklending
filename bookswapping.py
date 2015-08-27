@@ -21,15 +21,19 @@ from dicttoxml import dicttoxml
 # assorted useful helpers
 import httplib2
 import json
+import os
 from flask import make_response
 import requests
+
+# when running as WSGI application, cwd != code location
+here = os.path.dirname(__file__)
 
 app = Flask(__name__)
 app.debug = True
 app.secret_key = "swapyourbooks!"
 
 GP_CLIENT_ID = json.loads(
-    open('gp_client_secrets.json', 'r').read())['web']['client_id']
+    open(here + '/gp_client_secrets.json', 'r').read())['web']['client_id']
 
 engine = create_engine(DATABASE_URL)
 Base.metadata.bind = engine
@@ -160,7 +164,7 @@ def fbconnect():
     access_token = request.data
 
     # Exchange client token for long-lived server-side token
-    fb_client_secrets = json.loads(open('fb_client_secrets.json', 'r').read())
+    fb_client_secrets = json.loads(open(here + '/fb_client_secrets.json', 'r').read())
     app_id = fb_client_secrets['web']['app_id']
     app_secret = fb_client_secrets['web']['app_secret']
     url = "https://graph.facebook.com/oauth/access_token?grant_type=" + \
